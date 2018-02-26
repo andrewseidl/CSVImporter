@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "..\..\include\util\util.h"
+#include "../../include/util/util.h"
 #include <cuda.h>
 // Brian Kennedy - ADDED INCLUDE BELOW WHEN cudaEvent functions couldn't be recognized after adding importer ????
 #include <driver_types.h>

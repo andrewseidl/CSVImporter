@@ -131,7 +131,7 @@ int inumchunks = 1;
 uint64_t apprx_chunklen = 0;
 
 extern FILE * pCsvFileIn = NULL;
-__int64 startseek = (__int64)0;  // place to start in file to read a chunk
+int64_t startseek = (int64_t)0;  // place to start in file to read a chunk
 
 uint32_t chunkrecidxstarts[MAXCHUNKS + 1];
 uint32_t chunkbufidxstarts[MAXCHUNKS + 1];

@@ -28,7 +28,6 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <io.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -39,7 +38,10 @@
 #include <sstream>
 #include <random>
 #include <time.h>
+#ifdef WIN32
+#include <io.h>
 #include <windows.h>
+#endif
 #ifndef WIN32
 #include <sys/mman.h> // for mmap() / munmap()
 #endif
@@ -180,7 +182,7 @@ extern int inumchunks;
 extern uint64_t apprx_chunklen;
 
 extern FILE * pCsvFileIn;
-extern __int64 startseek;  // place to start in file to read a chunk
+extern int64_t startseek;  // place to start in file to read a chunk
 
 extern uint32_t chunkrecidxstarts[MAXCHUNKS + 1];
 extern uint32_t chunkbufidxstarts[MAXCHUNKS + 1];

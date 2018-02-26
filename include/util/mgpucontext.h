@@ -1,7 +1,7 @@
 #pragma once
 
-#include "..\..\include\util\util.h"
-#include "..\..\include\util\format.h"
+#include "../../include/util/util.h"
+#include "../../include/util/format.h"
 #include "mgpualloc.h"
 #include <cuda.h>
 // PDR ADDED INCLUDE BELOW WHEN cudaEvent functions couldn't be recognized after adding importer ????

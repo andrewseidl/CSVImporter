@@ -39,7 +39,7 @@ void AllocateHostMemory(bool bPinGenericMemory, uint32_t **pp_a, uint32_t **ppAl
 			*pp_a = (uint32_t *)VirtualAllocEx(GetCurrentProcess(), NULL, (nbytes + MEMORY_ALIGNMENT), MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 #else
 		printf("> mmap() allocating %4.2f Mbytes (generic page-aligned system memory)\n", (float)nbytes / 1048576.0f);
-		*pp_a = (int *)mmap(NULL, (nbytes + MEMORY_ALIGNMENT), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
+		*pp_a = (uint32_t *)mmap(NULL, (nbytes + MEMORY_ALIGNMENT), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
 #endif
 
 		*ppAligned_a = (uint32_t *)ALIGN_UP(*pp_a, MEMORY_ALIGNMENT);
@@ -59,7 +59,7 @@ void AllocateHostMemory(bool bPinGenericMemory, uint32_t **pp_a, uint32_t **ppAl
 	}
 }
 
-void FreeHostMemory(bool bPinGenericMemory, uint32_t **pp_a, uint32_t **ppAligned_a, unsigned int nbyte)
+void FreeHostMemory(bool bPinGenericMemory, uint32_t **pp_a, uint32_t **ppAligned_a, unsigned int nbytes)
 {
 #if CUDART_VERSION >= 4000
 
@@ -88,9 +88,9 @@ int CSVfilechunking(char * filepath)
 	pCsvFileIn = fopen(filepath, "rb");
 	if (pCsvFileIn == NULL) return -1;
 
-	_fseeki64(pCsvFileIn, (__int64)0, SEEK_END);
-	CsvFileLength = _ftelli64(pCsvFileIn);  // get length of file.
-	_fseeki64(pCsvFileIn, (__int64)0, SEEK_SET);  // reset file ptr to beginning for read
+	fseek(pCsvFileIn, (int64_t)0, SEEK_END);
+	CsvFileLength = ftell(pCsvFileIn);  // get length of file.
+	fseek(pCsvFileIn, (int64_t)0, SEEK_SET);  // reset file ptr to beginning for read
 
 	if (CsvFileLength <= MAXCHAR0RECORDS)
 	{

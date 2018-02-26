@@ -44,8 +44,8 @@ using namespace std;
 
 #include "CommonDefinitions.h"
 
-#include "include\util\mgpucontext.h"
-#include "include\kernels\scan.cuh"
+#include "include/util/mgpucontext.h"
+#include "include/kernels/scan.cuh"
 
 #include <algorithm>
 
@@ -93,14 +93,14 @@ extern "C" bool CopyOnlyUsedColNames(char * columnnames[], bool skucolflagsin[],
 }
 
 // Reads in first record of CSV file to get the column names and total column count.
-extern "C" bool PreProcessFileHeaderRecord(char * filepath, char ** columnnames[], uint16_t * colcount, __int64 * seekafterheader, char delim)
+extern "C" bool PreProcessFileHeaderRecord(char * filepath, char ** columnnames[], uint16_t * colcount, int64_t * seekafterheader, char delim)
 {
 	pCsvFileIn = fopen(filepath, "rb");
 	if (pCsvFileIn == NULL) return false;
 
-	_fseeki64(pCsvFileIn, (__int64)0, SEEK_END);
-	CsvFileLength = _ftelli64(pCsvFileIn);  // get length of file.
-	_fseeki64(pCsvFileIn, (__int64)0, SEEK_SET);  // reset file ptr to beginning for read
+	fseek(pCsvFileIn, (int64_t)0, SEEK_END);
+	CsvFileLength = ftell(pCsvFileIn);  // get length of file.
+	fseek(pCsvFileIn, (int64_t)0, SEEK_SET);  // reset file ptr to beginning for read
 
 	uint64_t readlen = 32768;  // assume this is the biggest record.
 	char * tbuf = new char[readlen];
@@ -162,9 +162,9 @@ extern "C" bool PreProcessFileHeaderRecord(char * filepath, char ** columnnames[
 	}
 	*columnnames = finalcolumnnames;  // copy new array to pointer.
 
-	*seekafterheader = (__int64)pastrecord;
+	*seekafterheader = (int64_t)pastrecord;
 
-	_fseeki64(pCsvFileIn, (__int64)0, SEEK_SET);  // reset file ptr to beginning for read.
+	fseek(pCsvFileIn, (int64_t)0, SEEK_SET);  // reset file ptr to beginning for read.
 
 	// FOR NOW CLOSE THE FILE.
 	fclose(pCsvFileIn);
@@ -201,14 +201,14 @@ extern "C" bool DeleteFileHeaderNames(char ** columnnames[], uint16_t colcount, 
 
 
 // This functions is like the prior one, except its purpose is simply to return an initial SEEK point after the first record.
-extern "C" bool SkipFileHeaderRecord(char * filepath, __int64 * seekafterheader)
+extern "C" bool SkipFileHeaderRecord(char * filepath, int64_t * seekafterheader)
 {
 	pCsvFileIn = fopen(filepath, "rb");
 	if (pCsvFileIn == NULL) return false;
 
-	_fseeki64(pCsvFileIn, (__int64)0, SEEK_END);
-	CsvFileLength = _ftelli64(pCsvFileIn);  // get length of file.
-	_fseeki64(pCsvFileIn, (__int64)0, SEEK_SET);  // reset file ptr to beginning for read
+	fseek(pCsvFileIn, (int64_t)0, SEEK_END);
+	CsvFileLength = ftell(pCsvFileIn);  // get length of file.
+	fseek(pCsvFileIn, (int64_t)0, SEEK_SET);  // reset file ptr to beginning for read
 
 	uint64_t readlen = 32768;  // assume this is the biggest record.
 	char * tbuf = new char[readlen];
@@ -232,9 +232,9 @@ extern "C" bool SkipFileHeaderRecord(char * filepath, __int64 * seekafterheader)
 	// if read all the way with no record found, return false.
 	if (!recordfound) return false;
 
-	*seekafterheader = (__int64)pastrecord;
+	*seekafterheader = (int64_t)pastrecord;
 
-	_fseeki64(pCsvFileIn, (__int64)0, SEEK_SET);  // reset file ptr to beginning for read.
+	fseek(pCsvFileIn, (int64_t)0, SEEK_SET);  // reset file ptr to beginning for read.
 
 	// FOR NOW CLOSE THE FILE.
 	fclose(pCsvFileIn);
@@ -272,7 +272,7 @@ extern "C" bool SkipFileHeaderRecord(char * filepath, __int64 * seekafterheader)
 //
 uint64_t importer_varcols(CudaContext& context, char * filepath,
 	int16_t * arrayUTF8charwidths, uint16_t numdefinedcolumns, uint16_t numtotalcolumns,
-	char delimiter, bool GPUResidentFlag, unsigned char ** dataColumnPtrs, unsigned int * dataColumnOffsets, __int64 initialseek = 0, uint8_t charmultiplier = 1, uint8_t bytesalignment = 8)
+	char delimiter, bool GPUResidentFlag, unsigned char ** dataColumnPtrs, unsigned int * dataColumnOffsets, int64_t initialseek = 0, uint8_t charmultiplier = 1, uint8_t bytesalignment = 8)
 {
 	// BELOW simply opens the file, calculates length and chunk sizes
 	// returns 0 if no issues, 1 for no records, -1 for file error.
@@ -382,7 +382,7 @@ uint64_t importer_varcols(CudaContext& context, char * filepath,
 			bytestoread = testchunksize;
 		}
 
-		_fseeki64(pCsvFileIn, startseek, SEEK_SET);  // set file ptr to start for read
+		fseek(pCsvFileIn, startseek, SEEK_SET);  // set file ptr to start for read
 		fread(h_CsvBuffer_a, sizeof(char), bytestoread, pCsvFileIn);  // read in the chunk.
 
 		// if not at last chunk, back up to a record terminator (linefeed).
@@ -783,7 +783,7 @@ uint64_t importer_varcols(CudaContext& context, char * filepath,
 
 
 
-extern "C" uint64_t CSVImporterMain(char * filename, char delimiter, uint16_t numTotalColumns, uint16_t numDefinedColumns, int16_t * ColumnCharWidths, unsigned char ** dataColumnPtrs, unsigned int * dataColumnOffsets, __int64 seekafterhdr, uint8_t charmultiplier, bool GPUResidentFlag)
+extern "C" uint64_t CSVImporterMain(char * filename, char delimiter, uint16_t numTotalColumns, uint16_t numDefinedColumns, int16_t * ColumnCharWidths, unsigned char ** dataColumnPtrs, unsigned int * dataColumnOffsets, int64_t seekafterhdr, uint8_t charmultiplier, bool GPUResidentFlag)
 {
 	// Get the Cuda device with the most GFLOPS for this operation
 	ContextPtr context = CreateCudaDevice(gpuGetMaxGflopsDeviceId());

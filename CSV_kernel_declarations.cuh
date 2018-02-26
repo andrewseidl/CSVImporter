@@ -58,7 +58,7 @@ extern "C" __global__ void SimpleStreamCompact(unsigned int *  d_Matches, unsign
 
 extern "C" void launch_SimpleStreamCompact(unsigned int *  d_Matches, unsigned int *  d_Scan, unsigned int *  d_ResultsOrdinals, unsigned int ValuesCount);
 
-extern "C" __global__ void BuildMarkerHeaders(unsigned __int32 *  d_Buffer, unsigned __int32 *  d_RecordHeaders, unsigned __int32 *  d_ColumnHeaders, unsigned __int32 TotalBytes);
+extern "C" __global__ void BuildMarkerHeaders(uint32_t *  d_Buffer, uint32_t *  d_RecordHeaders, uint32_t *  d_ColumnHeaders, uint32_t TotalBytes);
 
 extern "C" void launch_BuildMarkerHeaders(uint32_t *  d_Buffer, uint32_t *  d_RecordHeaders, uint32_t *  d_ColumnHeaders, uint32_t TotalBytes);
 

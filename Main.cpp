@@ -28,11 +28,16 @@ using namespace std;
 #include <errno.h>
 #include <ctype.h>
 
-#include <direct.h>
 #include <stdlib.h>
 #include <time.h>
 
-extern "C" uint64_t CSVImporterMain(char * filename, char delimiter, uint16_t numTotalColumns, uint16_t numDefinedColumns, int16_t * ColumnCharWidths, unsigned char ** dataColumnPtrs, unsigned int * dataColumnOffsets, __int64 seekafterhdr, uint8_t charmultiplier, bool GPUResidentFlag);
+#ifdef WIN32
+#include <direct.h>
+#else
+#include <unistd.h>
+#endif
+
+extern "C" uint64_t CSVImporterMain(char * filename, char delimiter, uint16_t numTotalColumns, uint16_t numDefinedColumns, int16_t * ColumnCharWidths, unsigned char ** dataColumnPtrs, unsigned int * dataColumnOffsets, int64_t seekafterhdr, uint8_t charmultiplier, bool GPUResidentFlag);
 
 int main(int argc, char** argv)
 {
@@ -40,14 +45,14 @@ int main(int argc, char** argv)
 	memset(buffer, 0, 256);
 
 	// Get the current working directory.
-	_getcwd(buffer, 256);
+	getcwd(buffer, 256);
 
 	// Add trailing backslash and test filename
-	strcat(buffer, "\\testfile.csv");
+	strcat(buffer, "/testfile.csv");
 
 	int16_t SampleColumnCharWidths[64];  // define char widths.
 										 // preliminary columns
-	__int64 seekafterhdr = 0;
+	int64_t seekafterhdr = 0;
 
 	uint16_t numTotalColumns = 5;  // number of total columns, including those to the right that are not defined.
 	uint16_t numDefinedColumns = 4;  // count of Defined Columns (these are ordered from left to right).

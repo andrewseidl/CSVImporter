@@ -57,14 +57,14 @@ __global__ void BuildRecsColsCharsHeaders(uint8_t *  d_Buffer, uint32_t *  d_Rec
 	// union for loading as...
 	union inputbytes_t
 	{
-		unsigned __int32 inputint;
+		uint32_t inputint;
 		unsigned char inputbytes[4];
 	};
 
 	// map buffer to 4 bytes.  examine each of those bytes.
 	// headers will output to a position re
 
-	__int32 totalints = TotalBytes >> 2;
+	int32_t totalints = TotalBytes >> 2;
 	int overbytes = TotalBytes & 0x3;
 	//int bytestodo = 4;
 	if (overbytes > 0)
@@ -176,14 +176,14 @@ __global__ void BuildRecordHeaders(uint8_t *  d_Buffer, uint32_t *  d_RecordHead
 	// union for loading as...
 	union inputbytes_t
 	{
-		unsigned __int32 inputint;
+		uint32_t inputint;
 		unsigned char inputbytes[4];
 	};
 
 	// map buffer to 4 bytes.  examine each of those bytes.
 	// headers will output to a position re
 
-	__int32 totalints = TotalBytes >> 2;
+	int32_t totalints = TotalBytes >> 2;
 	int overbytes = TotalBytes & 0x3;
 
 	if (overbytes > 0)
