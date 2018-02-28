@@ -284,6 +284,15 @@ static const char *_cudaGetErrorEnum(cudaError_t error)
         /* Since CUDA 8.0*/
         case cudaErrorNvlinkUncorrectable :
             return "cudaErrorNvlinkUncorrectable";
+
+#if CUDA_VERSION >= 9000
+        /* Since CUDA 9.0*/
+        case cudaErrorJitCompilerNotFound :
+            return "cudaErrorJitCompilerNotFound";
+
+        case cudaErrorCooperativeLaunchTooLarge :
+            return "cudaErrorCooperativeLaunchTooLarge";
+#endif
     }
 
     return "<unknown>";
@@ -472,6 +481,14 @@ static const char *_cudaGetErrorEnum(CUresult error)
 
         case CUDA_ERROR_UNKNOWN:
             return "CUDA_ERROR_UNKNOWN";
+
+#if CUDA_VERSION >= 9000
+        case CUDA_ERROR_JIT_COMPILER_NOT_FOUND:
+            return "CUDA_ERROR_JIT_COMPILER_NOT_FOUND";
+
+        case CUDA_ERROR_COOPERATIVE_LAUNCH_TOO_LARGE:
+            return "CUDA_ERROR_COOPERATIVE_LAUNCH_TOO_LARGE";
+#endif
     }
 
     return "<unknown>";
