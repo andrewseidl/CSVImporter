@@ -52,7 +52,7 @@ bool InitializeGPUElements_REUSABLES(uint64_t totalbytes)
 	checkCudaErrors(cudaMalloc((void **)&(d_RecordsToQuoteBoundariesTable), (totalbytes /*recordstablecount_commas + 1*/) * sizeof(uint32_t)));  // 1 element for scans
 
 	checkCudaErrors(cudaMalloc((void **)&(d_CsvBuffer_printing), (totalbytes /*printingcharstemp*/) + 256));
-	
+
 	checkCudaErrors(cudaMalloc((void **)&(d_RecordHeaders_printing), ((totalbytes /*printingcharscount*/)  + 1) * sizeof(uint32_t)));
 	checkCudaErrors(cudaMalloc((void **)&(d_ColumnHeaders_printing), ((totalbytes /*printingcharscount*/) + 1) * sizeof(uint32_t)));
 
@@ -173,7 +173,7 @@ extern "C" void Check_cuda_FreeHost(void ** memlocaddress)
 		//fprintf(stderr, "cudaFreeHost ATTEMPT TO FREE NULL POINTER.\r\n");
 		//DEVICE_RESET;
 		//exit(1);
-		return;  // for now simply ignore 
+		return;  // for now simply ignore
 	}
 
 	checkCudaErrors(cudaFreeHost(*memlocaddress));
@@ -186,7 +186,7 @@ extern "C" void Check_cuda_FreeHost(void ** memlocaddress)
 extern "C" void __Check_cuda_Errors(const char *errorMessage, const char *file, const int line)
 {
 	cudaError_t err = cudaGetLastError();
-	
+
 	if (cudaSuccess != err)
 	{
 		fprintf(stderr, "%s(%i) : getLastCudaError() CUDA error : %s : (%d) %s.\n",

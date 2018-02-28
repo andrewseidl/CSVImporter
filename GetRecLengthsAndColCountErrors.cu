@@ -23,7 +23,7 @@
 #include "CSV_kernel_declarations.cuh"
 #include "csvImporter.h"
 
-// Goes through the Records Table.  Gets record lengths, Column counts per record, and sets column count errors flag if column nums don't match setting.  
+// Goes through the Records Table.  Gets record lengths, Column counts per record, and sets column count errors flag if column nums don't match setting.
 // This version of the launcher and kernel use shared mem to store last lane values in block.  Since need to compare current value to prev, this saves a buffer read.
 // However we do not write out last lane of last thread to SMEM (would be throw away), so we don't allocate SMEM for that.
 extern "C" void

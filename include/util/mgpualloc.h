@@ -17,7 +17,7 @@ typedef intrusive_ptr<CudaContext> ContextPtr;
 // Customizable allocator.
 
 // CudaAlloc is the interface class all allocator accesses. Users may derive
-// this, implement custom allocators, and set it to the device with 
+// this, implement custom allocators, and set it to the device with
 // CudaDevice::SetAllocator.
 
 class CudaAlloc : public CudaBase {
@@ -27,9 +27,9 @@ public:
 	virtual void Clear() = 0;
 
 	virtual ~CudaAlloc() { }
-	
+
 	CudaDevice& Device() { return _device; }
-	
+
 protected:
 	CudaAlloc(CudaDevice& device) : _device(device) { }
 	CudaDevice& _device;

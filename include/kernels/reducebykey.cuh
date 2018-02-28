@@ -1,6 +1,6 @@
 /******************************************************************************
  * Copyright (c) 2013, NVIDIA CORPORATION.  All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -11,10 +11,10 @@
  *     * Neither the name of the NVIDIA CORPORATION nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED. IN NO EVENT SHALL NVIDIA CORPORATION BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -48,7 +48,7 @@ MGPU_LAUNCH_BOUNDS void KernelReduceByKeyPreprocess(KeysIt keys_global,
 	typedef typename std::iterator_traits<KeysIt>::value_type T;
 	typedef MGPU_LAUNCH_PARAMS Params;
 	const int NT = Params::NT;
-	
+
 	const int VT = Params::VT;
 	const int NV = NT * VT;
 
@@ -64,16 +64,16 @@ MGPU_LAUNCH_BOUNDS void KernelReduceByKeyPreprocess(KeysIt keys_global,
 	int gid = NV * block;
 	int count2 = min(NV + 1, count - gid);
 
-	// Load the keys for this tile with one following element. This allows us 
+	// Load the keys for this tile with one following element. This allows us
 	// to determine end flags for all segments.
 	DeviceGlobalToShared2<NT, VT, VT + 1>(count2, keys_global + gid, tid,
 		shared.keys);
 
-	// Compare adjacent keys in each thread and mark discontinuities in 
+	// Compare adjacent keys in each thread and mark discontinuities in
 	// endFlags bits.
 	int endFlags = 0;
 	if(count2 > NV) {
-		T key = shared.keys[VT * tid];	
+		T key = shared.keys[VT * tid];
 		#pragma unroll
 		for(int i = 0; i < VT; ++i) {
 			T next = shared.keys[VT * tid + 1 + i];
@@ -81,7 +81,7 @@ MGPU_LAUNCH_BOUNDS void KernelReduceByKeyPreprocess(KeysIt keys_global,
 			key = next;
 		}
 	} else {
-		T key = shared.keys[VT * tid];	
+		T key = shared.keys[VT * tid];
 		#pragma unroll
 		for(int i = 0; i < VT; ++i) {
 			int index = VT * tid + 1 + i;
@@ -92,7 +92,7 @@ MGPU_LAUNCH_BOUNDS void KernelReduceByKeyPreprocess(KeysIt keys_global,
 		}
 	}
 	__syncthreads();
-		
+
 	// Count the number of encountered end flags.
 	int total;
 	int scan = CTAScan<NT>::Scan(tid, popc(endFlags), shared.scanStorage,
@@ -103,7 +103,7 @@ MGPU_LAUNCH_BOUNDS void KernelReduceByKeyPreprocess(KeysIt keys_global,
 
 	if(total) {
 		// Find the segmented scan start for this thread.
-		int tidDelta = DeviceFindSegScanDelta<NT>(tid, 0 != endFlags, 
+		int tidDelta = DeviceFindSegScanDelta<NT>(tid, 0 != endFlags,
 			shared.indices);
 
 		// threadCodes:
@@ -146,7 +146,7 @@ MGPU_LAUNCH_BOUNDS void KernelReduceByKeyEmit(KeysIt keys_global,
 		// Reconstruct row IDs from thread codes and the starting row offset.
 		int rows[VT + 1];
 		DeviceExpandFlagsToRows<VT>(threadCodes>> 20, threadCodes, rows);
-		
+
 		// Compact the location of the last element in each segment.
 		int index = gid + VT * tid;
 		#pragma unroll
@@ -172,7 +172,7 @@ MGPU_LAUNCH_BOUNDS void KernelReduceByKeyEmit(KeysIt keys_global,
 // ReduceByKeyPreprocess
 
 template<typename ValType, typename KeyType, typename KeysIt, typename Comp>
-MGPU_HOST void ReduceByKeyPreprocess(int count, KeysIt keys_global, 
+MGPU_HOST void ReduceByKeyPreprocess(int count, KeysIt keys_global,
 	KeyType* keysDest_global, Comp comp, int* count_host, int* count_global,
 	std::auto_ptr<ReduceByKeyPreprocessData>* ppData, CudaContext& context) {
 
@@ -182,7 +182,7 @@ MGPU_HOST void ReduceByKeyPreprocess(int count, KeysIt keys_global,
 
 	const bool AsyncTransfer = true;
 
-	std::auto_ptr<ReduceByKeyPreprocessData> 
+	std::auto_ptr<ReduceByKeyPreprocessData>
 		data(new ReduceByKeyPreprocessData);
 
 	int numBlocks = MGPU_DIV_UP(count, NV);
@@ -193,7 +193,7 @@ MGPU_HOST void ReduceByKeyPreprocess(int count, KeysIt keys_global,
 
 	// Fill out thread codes for each thread in the processing CTAs.
 	KernelReduceByKeyPreprocess<Tuning>
-		<<<numBlocks, launch.x, 0, context.Stream()>>>(keys_global, count, 
+		<<<numBlocks, launch.x, 0, context.Stream()>>>(keys_global, count,
 		data->threadCodesDevice->get(), data->limitsDevice->get(), comp);
 	MGPU_SYNC_CHECK("KernelReduceByKeyPreprocess");
 
@@ -208,7 +208,7 @@ MGPU_HOST void ReduceByKeyPreprocess(int count, KeysIt keys_global,
 			context.Stream());
 	if(count_host) {
 		if(AsyncTransfer) {
-			cudaError_t error = cudaMemcpyAsync(context.PageLocked(), 
+			cudaError_t error = cudaMemcpyAsync(context.PageLocked(),
 				data->limitsDevice->get() + numBlocks, sizeof(int),
 				cudaMemcpyDeviceToHost, context.Stream());
 			error = cudaEventRecord(context.Event(), context.Stream());
@@ -241,23 +241,23 @@ MGPU_HOST void ReduceByKeyPreprocess(int count, KeysIt keys_global,
 template<typename KeysIt, typename InputIt, typename DestIt,
 	typename KeyType, typename ValType, typename Op, typename Comp>
 MGPU_HOST void ReduceByKey(KeysIt keys_global, InputIt data_global, int count,
-	ValType identity, Op op, Comp comp, KeyType* keysDest_global, 
-	DestIt dest_global, int* count_host, int* count_global, 
+	ValType identity, Op op, Comp comp, KeyType* keysDest_global,
+	DestIt dest_global, int* count_host, int* count_global,
 	CudaContext& context) {
-		
+
 	std::auto_ptr<ReduceByKeyPreprocessData> data;
 	MGPU_MEM(int) countsDevice = context.Malloc<int>(1);
 	if(count_host && !count_global) count_global = countsDevice->get();
 
 	// Preprocess the keys and emit the first key in each segment.
-	ReduceByKeyPreprocess<ValType>(count, keys_global, keysDest_global, comp, 
+	ReduceByKeyPreprocess<ValType>(count, keys_global, keysDest_global, comp,
 		(int*)0, count_global, &data, context);
-	
+
 	const bool AsyncTransfer = true;
 	if(count_host) {
 		if(AsyncTransfer) {
-			cudaError_t error = cudaMemcpyAsync(context.PageLocked(), 
-				count_global, sizeof(int), cudaMemcpyDeviceToHost, 
+			cudaError_t error = cudaMemcpyAsync(context.PageLocked(),
+				count_global, sizeof(int), cudaMemcpyDeviceToHost,
 				context.Stream());
 			error = cudaEventRecord(context.Event(), context.Stream());
 		} else
@@ -278,7 +278,7 @@ MGPU_HOST void ReduceByKey(KeysIt keys_global, InputIt data_global, int count,
 // ReduceByKeyApply
 
 template<typename InputIt, typename DestIt, typename T, typename Op>
-MGPU_HOST void ReduceByKeyApply(const ReduceByKeyPreprocessData& preprocess, 
+MGPU_HOST void ReduceByKeyApply(const ReduceByKeyPreprocessData& preprocess,
 	InputIt data_global, T identity, Op op, DestIt dest_global,
 	CudaContext& context) {
 

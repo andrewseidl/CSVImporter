@@ -1,6 +1,6 @@
 /******************************************************************************
  * Copyright (c) 2013, NVIDIA CORPORATION.  All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -11,10 +11,10 @@
  *     * Neither the name of the NVIDIA CORPORATION nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED. IN NO EVENT SHALL NVIDIA CORPORATION BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -63,7 +63,7 @@ bool ReadSparseMatrix(FILE* f, std::auto_ptr<SparseMatrix>* ppMatrix,
 	bool isPattern = mm_is_pattern(matcode);
 	bool isReal = mm_is_real(matcode);
 
-	if(!(isPattern || isReal) || !mm_is_matrix(matcode) || 
+	if(!(isPattern || isReal) || !mm_is_matrix(matcode) ||
 		!mm_is_coordinate(matcode) || !mm_is_sparse(matcode)) {
 		err = "Not a real matrix.\n";
 		return false;
@@ -111,7 +111,7 @@ bool ReadSparseMatrix(FILE* f, std::auto_ptr<SparseMatrix>* ppMatrix,
 	std::sort(elements.begin(), elements.end());
 
 	std::auto_ptr<SparseMatrix> m(new SparseMatrix);
-	
+
 	nz = (int)elements.size();
 	m->height = height;
 	m->width = width;
@@ -150,7 +150,7 @@ bool ReadSparseMatrix(const char* filename,
 	}
 
 	bool success = ReadSparseMatrix(f, ppMatrix, err);
-	
+
 	fclose(f);
 	return success;
 }
@@ -197,7 +197,7 @@ bool StoreBinaryMatrix(const char* filename, const SparseMatrix& m) {
 	return true;
 }
 
-bool LoadCachedMatrix(const char* filename, 
+bool LoadCachedMatrix(const char* filename,
 	std::auto_ptr<SparseMatrix>* ppMatrix, std::string& err) {
 
 	// Attempt to load the binary matrix. If that fails, load the Matrix Market
@@ -263,14 +263,14 @@ int64 MulSparseMatrices(const SparseMatrix& A, const SparseMatrix& B,
 		std::map<int, double> rowMap;
 		int aCsr0 = A.csr[row];
 		int aCsr1 = (row + 1 < A.height) ? A.csr[row + 1] : A.nz;
-		
+
 		for(int i = aCsr0; i < aCsr1; ++i) {
 			int aCol = A.cols[i];
 			double x = A.matrix[i];
 
 			int bCsr0 = B.csr[aCol];
 			int bCsr1 = (aCol + 1 < B.height) ? B.csr[aCol + 1] : B.nz;
-			
+
 			numProducts += bCsr1 - bCsr0;
 
 			for(int j = bCsr0; j < bCsr1; ++j)

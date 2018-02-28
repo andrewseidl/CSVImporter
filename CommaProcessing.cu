@@ -27,7 +27,7 @@
 // either single (or odd #) quote going into to comma, or comma going into single (or odd #) quote.
 // this kernel also flags odd # quote (before, after, or both) as non-printing
 
-// second kernel picks up quote pairs.  this kernel must run AFTER first one is complete.  
+// second kernel picks up quote pairs.  this kernel must run AFTER first one is complete.
 // the purpose is to pick up quote pairs and flag the SECCONDs as non-printing.
 // it starts with a first quote.
 // this means first in file, first after a non-quote, or first after a non-printing quote.
@@ -106,7 +106,7 @@ __global__ void MarkCommas(uint8_t *  d_Buffer, uint32_t *  d_QuoteBoundaryHeade
 
 	// unless have 1 of above conditions, nothing to do.
 	if (!(havecomma || haveCR || haveLF || atStart || atEnd)) return;
-	
+
 	int fwdquotecount = 0;
 	int revquotecount = 0;
 
@@ -186,7 +186,7 @@ __global__ void DoubleQuotes(uint8_t *  d_Buffer,
 
 	if (d_Buffer[ix] != '"')  return;  // exit if not quote
 	if (d_printingchars_flags[ix] == 1) return;  // exit if not printing
-	
+
 	// exit if this is not a first printing quote (that way threads won't step on each other).
 	if (ix != 0)
 	{

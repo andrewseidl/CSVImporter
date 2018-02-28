@@ -1,6 +1,6 @@
 /******************************************************************************
  * Copyright (c) 2013, NVIDIA CORPORATION.  All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -11,10 +11,10 @@
  *     * Neither the name of the NVIDIA CORPORATION nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED. IN NO EVENT SHALL NVIDIA CORPORATION BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -42,7 +42,7 @@ namespace mgpu {
 // KernelReduce
 
 template<typename Tuning, typename InputIt, typename T, typename Op>
-MGPU_LAUNCH_BOUNDS void KernelReduce(InputIt data_global, int count, 
+MGPU_LAUNCH_BOUNDS void KernelReduce(InputIt data_global, int count,
 	T identity, Op op, T* reduction_global) {
 
 	typedef MGPU_LAUNCH_PARAMS Params;
@@ -134,7 +134,7 @@ MGPU_HOST void Reduce(InputIt data_global, int count, T identity, Op op,
 
 template<typename InputIt>
 MGPU_HOST typename std::iterator_traits<InputIt>::value_type
-Reduce(InputIt data_global, int count, CudaContext& context) { 
+Reduce(InputIt data_global, int count, CudaContext& context) {
 	typedef typename std::iterator_traits<InputIt>::value_type T;
 	T result;
 	Reduce(data_global, count, (T)0, mgpu::plus<T>(), (T*)0, &result, context);

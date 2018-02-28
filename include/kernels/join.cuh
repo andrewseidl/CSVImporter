@@ -1,6 +1,6 @@
 /******************************************************************************
  * Copyright (c) 2013, NVIDIA CORPORATION.  All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -11,10 +11,10 @@
  *     * Neither the name of the NVIDIA CORPORATION nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED. IN NO EVENT SHALL NVIDIA CORPORATION BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -45,7 +45,7 @@ namespace mgpu {
 template<typename Tuning, bool LeftJoin>
 MGPU_LAUNCH_BOUNDS void KernelLeftJoin(int total, const int* aLowerBound_global,
 	const int* aCountsScan_global, int aCount, const int* mp_global,
-	int* aIndices_global, int* bIndices_global) { 
+	int* aIndices_global, int* bIndices_global) {
 
 	typedef MGPU_LAUNCH_PARAMS Params;
 	const int NT = Params::NT;
@@ -88,7 +88,7 @@ MGPU_LAUNCH_BOUNDS void KernelLeftJoin(int total, const int* aLowerBound_global,
 			int lb = input_shared[aIndex[i] - range.z];
 			int bIndex;
 			if(LeftJoin)
-				bIndex = (0x80000000 & lb) ? 
+				bIndex = (0x80000000 & lb) ?
 					((0x7fffffff & lb) + rank[i]) :
 					-1;
 			else
@@ -111,7 +111,7 @@ struct LeftJoinEqualityOp {
 template<int NT>
 __global__ void KernelRightJoinUpsweep(const uint64* matches_global, int count,
 	int* totals_global) {
-		
+
 	typedef CTAReduce<NT> R;
 	__shared__ typename R::Storage reduce;
 
@@ -132,13 +132,13 @@ __global__ void KernelRightJoinUpsweep(const uint64* matches_global, int count,
 		uint2 pair = ulonglong_as_uint2(packed);
 		x = 8 - popc(pair.x) - popc(pair.y);
 	}
-	
+
 	int total = R::Reduce(tid, x, reduce);
 	if(!tid) totals_global[block] = total;
 }
 
 template<int NT>
-__global__ void KernelRightJoinDownsweep(const uint64* matches_global, 
+__global__ void KernelRightJoinDownsweep(const uint64* matches_global,
 	int count, const int* scan_global, int* rightJoin_global) {
 
 	typedef CTAScan<NT> S;
@@ -147,7 +147,7 @@ __global__ void KernelRightJoinDownsweep(const uint64* matches_global,
 		typename S::Storage scan;
 	};
 	__shared__ Shared shared;
-	
+
 	int tid = threadIdx.x;
 	int block = blockIdx.x;
 	int gid = 8 * NT * block;
@@ -177,12 +177,12 @@ __global__ void KernelRightJoinDownsweep(const uint64* matches_global,
 	if(x) {
 		#pragma unroll
 		for(int i = 0; i < 8; ++i)
-			if((1ll<< (8 * i)) & packed) 
+			if((1ll<< (8 * i)) & packed)
 				shared.indices[scan++] = gid + 8 * tid + i;
 	}
 	__syncthreads();
 
-	DeviceMemToMemLoop<NT>(total, shared.indices, tid, 
+	DeviceMemToMemLoop<NT>(total, shared.indices, tid,
 		rightJoin_global + start, false);
 }
 
@@ -192,16 +192,16 @@ __global__ void KernelRightJoinDownsweep(const uint64* matches_global,
 template<MgpuJoinKind Kind, typename InputIt1, typename InputIt2,
 	typename Comp>
 MGPU_HOST int RelationalJoin(InputIt1 a_global, int aCount, InputIt2 b_global,
-	int bCount, MGPU_MEM(int)* ppAJoinIndices, MGPU_MEM(int)* ppBJoinIndices, 
+	int bCount, MGPU_MEM(int)* ppAJoinIndices, MGPU_MEM(int)* ppBJoinIndices,
 	Comp comp, CudaContext& context) {
 
 	typedef typename std::iterator_traits<InputIt1>::value_type T;
-	const bool SupportLeft = MgpuJoinKindLeft == Kind || 
+	const bool SupportLeft = MgpuJoinKindLeft == Kind ||
 		MgpuJoinKindOuter == Kind;
 	const bool SupportRight = MgpuJoinKindRight == Kind ||
 		MgpuJoinKindOuter == Kind;
 
-	const MgpuSearchType LeftType = SupportLeft ? 
+	const MgpuSearchType LeftType = SupportLeft ?
 		MgpuSearchTypeIndexMatch : MgpuSearchTypeIndex;
 
 	MGPU_MEM(int) aLowerBound = context.Malloc<int>(aCount);
@@ -221,20 +221,20 @@ MGPU_HOST int RelationalJoin(InputIt1 a_global, int aCount, InputIt2 b_global,
 			aCount, b_global, bCount, aLowerBound->get(), bMatches->get(), comp,
 			context, 0, &bMatchCount);
 		rightJoinTotal = bCount - bMatchCount;
-	} else 
+	} else
 		SortedSearch<MgpuBoundsLower, LeftType, MgpuSearchTypeNone>(a_global,
 			aCount, b_global, bCount, aLowerBound->get(), (int*)0, comp,
 			context, 0, 0);
 
 	// Use the lower bounds to compute the counts for each element.
 	MGPU_MEM(int) aCounts = context.Malloc<int>(aCount);
-	if(SupportLeft) 
+	if(SupportLeft)
 		SortedEqualityCount(a_global, aCount, b_global, bCount,
-			aLowerBound->get(), aCounts->get(), comp, LeftJoinEqualityOp(), 
+			aLowerBound->get(), aCounts->get(), comp, LeftJoinEqualityOp(),
 			context);
 	else
 		SortedEqualityCount(a_global, aCount, b_global, bCount,
-			aLowerBound->get(), aCounts->get(), comp, SortedEqualityOp(), 
+			aLowerBound->get(), aCounts->get(), comp, SortedEqualityOp(),
 			context);
 
 	// Scan the product counts. This is part of the load-balancing search.
@@ -247,19 +247,19 @@ MGPU_HOST int RelationalJoin(InputIt1 a_global, int aCount, InputIt2 b_global,
 	MGPU_MEM(int) aIndicesDevice = context.Malloc<int>(joinTotal);
 	MGPU_MEM(int) bIndicesDevice = context.Malloc<int>(joinTotal);
 
-	// Launch the inner/left join kernel. Run an upper-bounds partitioning 
+	// Launch the inner/left join kernel. Run an upper-bounds partitioning
 	// to load-balance the data.
 	typedef LaunchBoxVT<128, 7> Tuning;
 	int2 launch = Tuning::GetLaunchParams(context);
 	int NV = launch.x * launch.y;
-	
+
 	MGPU_MEM(int) partitionsDevice = MergePathPartitions<MgpuBoundsUpper>(
 		mgpu::counting_iterator<int>(0), leftJoinTotal, aCounts->get(),
 		aCount, NV, 0, mgpu::less<int>(), context);
 
 	int numBlocks = MGPU_DIV_UP(leftJoinTotal + aCount, NV);
 	KernelLeftJoin<Tuning, SupportLeft>
-		<<<numBlocks, launch.x, 0, context.Stream()>>>(leftJoinTotal, 
+		<<<numBlocks, launch.x, 0, context.Stream()>>>(leftJoinTotal,
 		aLowerBound->get(), aCounts->get(), aCount, partitionsDevice->get(),
 		aIndicesDevice->get(), bIndicesDevice->get());
 	MGPU_SYNC_CHECK("KernelLeftJoin");
@@ -273,15 +273,15 @@ MGPU_HOST int RelationalJoin(InputIt1 a_global, int aCount, InputIt2 b_global,
 		KernelRightJoinUpsweep<NT><<<numBlocks, NT>>>(
 			(const uint64*)bMatches->get(), bCount, totals->get());
 		MGPU_SYNC_CHECK("KernelRightJoinUpsweep");
-		
+
 		ScanExc(totals->get(), numBlocks, context);
 
 		KernelRightJoinDownsweep<NT><<<numBlocks, NT>>>(
-			(const uint64*)bMatches->get(), bCount, totals->get(), 
+			(const uint64*)bMatches->get(), bCount, totals->get(),
 			bIndicesDevice->get() + leftJoinTotal);
 		MGPU_SYNC_CHECK("KernelRightJoinDownsweep");
 
-		cudaMemset(aIndicesDevice->get() + leftJoinTotal, -1, 
+		cudaMemset(aIndicesDevice->get() + leftJoinTotal, -1,
 			sizeof(int) * rightJoinTotal);
 	}
 
@@ -292,7 +292,7 @@ MGPU_HOST int RelationalJoin(InputIt1 a_global, int aCount, InputIt2 b_global,
 
 template<MgpuJoinKind Kind, typename InputIt1, typename InputIt2>
 MGPU_HOST int RelationalJoin(InputIt1 a_global, int aCount, InputIt2 b_global,
-	int bCount, MGPU_MEM(int)* ppAJoinIndices, MGPU_MEM(int)* ppBJoinIndices, 
+	int bCount, MGPU_MEM(int)* ppAJoinIndices, MGPU_MEM(int)* ppBJoinIndices,
 	CudaContext& context) {
 
 	typedef typename std::iterator_traits<InputIt1>::value_type T;

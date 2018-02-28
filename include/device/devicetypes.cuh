@@ -1,6 +1,6 @@
 /******************************************************************************
  * Copyright (c) 2013, NVIDIA CORPORATION.  All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -11,10 +11,10 @@
  *     * Neither the name of the NVIDIA CORPORATION nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED. IN NO EVENT SHALL NVIDIA CORPORATION BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -38,7 +38,7 @@
 
 #if __CUDA_ARCH__ == 100
 	#error "COMPUTE CAPABILITY 1.0 NOT SUPPORTED BY MPGU. TRY 2.0!"
-#endif 
+#endif
 
 #include <climits>
 #include "../util/static.h"
@@ -209,7 +209,7 @@ template<> struct numeric_limits<double> {
 
 
 MGPU_HOST_DEVICE int2 operator+(int2 a, int2 b) {
-	return make_int2(a.x + b.x, a.y + b.y); 
+	return make_int2(a.x + b.x, a.y + b.y);
 }
 MGPU_HOST_DEVICE int2& operator+=(int2& a, int2 b) {
 	a = a + b;
@@ -251,8 +251,8 @@ MGPU_HOST_DEVICE int2 min(int2 a, int2 b) {
 template<> struct numeric_limits<int2> {
 	MGPU_HOST_DEVICE static int2 min() { return make_int2(INT_MIN, INT_MIN); }
 	MGPU_HOST_DEVICE static int2 max() { return make_int2(INT_MAX, INT_MAX); }
-	MGPU_HOST_DEVICE static int2 lowest() { 
-		return make_int2(INT_MIN, INT_MIN); 
+	MGPU_HOST_DEVICE static int2 lowest() {
+		return make_int2(INT_MIN, INT_MIN);
 	}
 	MGPU_HOST_DEVICE static int2 AddIdent() { return make_int2(0, 0); }
 	MGPU_HOST_DEVICE static int2 MulIdent() { return make_int2(1, 1); }
@@ -263,7 +263,7 @@ class constant_iterator : public std::iterator_traits<const T*> {
 public:
 	MGPU_HOST_DEVICE constant_iterator(T value) : _value(value) { }
 
-	MGPU_HOST_DEVICE T operator[](ptrdiff_t i) const { 
+	MGPU_HOST_DEVICE T operator[](ptrdiff_t i) const {
 		return _value;
 	}
 	MGPU_HOST_DEVICE T operator*() const {
@@ -290,7 +290,7 @@ class counting_iterator : public std::iterator_traits<const T*> {
 public:
 	MGPU_HOST_DEVICE counting_iterator(T value) : _value(value) { }
 
-	MGPU_HOST_DEVICE T operator[](ptrdiff_t i) { 
+	MGPU_HOST_DEVICE T operator[](ptrdiff_t i) {
 		return _value + i;
 	}
 	MGPU_HOST_DEVICE T operator*() {
@@ -320,12 +320,12 @@ public:
 	MGPU_HOST_DEVICE step_iterator(T base, T step) :
 		_base(base), _step(step), _offset(0) { }
 
-	MGPU_HOST_DEVICE T operator[](ptrdiff_t i) { 
-		return _base + (_offset + i) * _step; 
+	MGPU_HOST_DEVICE T operator[](ptrdiff_t i) {
+		return _base + (_offset + i) * _step;
 	}
-	MGPU_HOST_DEVICE T operator*() { 
-		return _base + _offset * _step; 
-	} 
+	MGPU_HOST_DEVICE T operator*() {
+		return _base + _offset * _step;
+	}
 	MGPU_HOST_DEVICE step_iterator operator+(ptrdiff_t diff) {
 		step_iterator it = *this;
 		it._offset += diff;
@@ -336,17 +336,17 @@ public:
 		it._offset -= diff;
 		return it;
 	}
-	MGPU_HOST_DEVICE step_iterator& operator+=(ptrdiff_t diff) { 
+	MGPU_HOST_DEVICE step_iterator& operator+=(ptrdiff_t diff) {
 		_offset += diff;
 		return *this;
 	}
-	MGPU_HOST_DEVICE step_iterator& operator-=(ptrdiff_t diff) { 
+	MGPU_HOST_DEVICE step_iterator& operator-=(ptrdiff_t diff) {
 		_offset -= diff;
 		return *this;
 	}
 private:
 	ptrdiff_t _offset;
-	T _base, _step;	
+	T _base, _step;
 };
 
 } // namespace mgpu
@@ -364,12 +364,12 @@ MGPU_HOST_DEVICE mgpu::counting_iterator<T> operator-(ptrdiff_t diff,
 	return it + (-diff);
 }
 template<typename T>
-MGPU_HOST_DEVICE mgpu::step_iterator<T> operator+(ptrdiff_t diff, 
+MGPU_HOST_DEVICE mgpu::step_iterator<T> operator+(ptrdiff_t diff,
 	mgpu::step_iterator<T> it) {
 	return it + diff;
 }
 template<typename T>
-MGPU_HOST_DEVICE mgpu::step_iterator<T> operator-(ptrdiff_t diff, 
+MGPU_HOST_DEVICE mgpu::step_iterator<T> operator-(ptrdiff_t diff,
 	mgpu::step_iterator<T> it) {
 	return it + (-diff);
 }

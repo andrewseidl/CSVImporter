@@ -1,6 +1,6 @@
 /******************************************************************************
  * Copyright (c) 2013, NVIDIA CORPORATION.  All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -11,10 +11,10 @@
  *     * Neither the name of the NVIDIA CORPORATION nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED. IN NO EVENT SHALL NVIDIA CORPORATION BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -41,12 +41,12 @@ namespace mgpu {
 
 ////////////////////////////////////////////////////////////////////////////////
 // KernelBulkRemove
-// Copy the values that are not matched by an index. This is like the 
+// Copy the values that are not matched by an index. This is like the
 // anti-gather.
 
-template<typename Tuning, typename InputIt, typename IndicesIt, 
+template<typename Tuning, typename InputIt, typename IndicesIt,
 	typename OutputIt>
-MGPU_LAUNCH_BOUNDS void KernelBulkRemove(InputIt source_global, int sourceCount, 
+MGPU_LAUNCH_BOUNDS void KernelBulkRemove(InputIt source_global, int sourceCount,
 	IndicesIt indices_global, int indicesCount, const int* p_global,
 	OutputIt dest_global) {
 
@@ -89,11 +89,11 @@ MGPU_LAUNCH_BOUNDS void KernelBulkRemove(InputIt source_global, int sourceCount,
 	// Set the counter to 0 for each index we've loaded.
 	#pragma unroll
 	for(int i = 0; i < VT; ++i)
-		if(NT * i + tid < indexCount) 
+		if(NT * i + tid < indexCount)
 			shared.indices[indices[i] - gid] = 0;
 	__syncthreads();
 
-	// Run a raking scan over the flags. We count the set flags - this is the 
+	// Run a raking scan over the flags. We count the set flags - this is the
 	// number of elements to load in per thread.
 	int x = 0;
 	#pragma unroll
@@ -111,7 +111,7 @@ MGPU_LAUNCH_BOUNDS void KernelBulkRemove(InputIt source_global, int sourceCount,
 	// Load the gather indices into register.
 	DeviceSharedToReg<NT, VT>(shared.indices, tid, indices);
 
-	// Gather the data into register. The number of values to copy is 
+	// Gather the data into register. The number of values to copy is
 	// sourceCount - indexCount.
 	source_global += gid;
 	int count = sourceCount - indexCount;
@@ -123,7 +123,7 @@ MGPU_LAUNCH_BOUNDS void KernelBulkRemove(InputIt source_global, int sourceCount,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BulkRemove 
+// BulkRemove
 
 template<typename InputIt, typename IndicesIt, typename OutputIt>
 MGPU_HOST void BulkRemove(InputIt source_global, int sourceCount,
@@ -137,12 +137,12 @@ MGPU_HOST void BulkRemove(InputIt source_global, int sourceCount,
 	const int NV = launch.x * launch.y;
 
 	MGPU_MEM(int) partitionsDevice = BinarySearchPartitions<MgpuBoundsLower>(
-		sourceCount, indices_global, indicesCount, NV, mgpu::less<int>(), 
+		sourceCount, indices_global, indicesCount, NV, mgpu::less<int>(),
 		context);
 
 	int numBlocks = MGPU_DIV_UP(sourceCount, NV);
 	KernelBulkRemove<Tuning><<<numBlocks, launch.x, 0, context.Stream()>>>(
-		source_global, sourceCount, indices_global, indicesCount, 
+		source_global, sourceCount, indices_global, indicesCount,
 		partitionsDevice->get(), dest_global);
 	MGPU_SYNC_CHECK("KernelBulkRemove");
 }

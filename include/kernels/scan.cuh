@@ -1,6 +1,6 @@
 /******************************************************************************
  * Copyright (c) 2013, NVIDIA CORPORATION.  All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -11,10 +11,10 @@
  *     * Neither the name of the NVIDIA CORPORATION nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED. IN NO EVENT SHALL NVIDIA CORPORATION BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -32,7 +32,7 @@
  *
  ******************************************************************************/
 
-#pragma once	
+#pragma once
 
 #include "../mgpudevice.cuh"
 #include "../kernels/reduce.cuh"
@@ -61,8 +61,8 @@ struct CTATileScan {
 			DeviceGlobalToSharedDefault<NT, VT>(count, data_global, tid,
 				storage.data, identity);
 			DeviceSharedToThread<VT>(storage.data, tid, data);
-		} else 
-			DeviceGlobalToRegDefault<NT, VT>(count, data_global, tid, data, 
+		} else
+			DeviceGlobalToRegDefault<NT, VT>(count, data_global, tid, data,
 				identity);
 
 		// Reduce within each thread for thread totals.
@@ -82,7 +82,7 @@ struct CTATileScan {
 
 		#pragma unroll
 		for(int i = 0; i < VT; ++i) {
-			if(MgpuScanTypeExc == Type) 
+			if(MgpuScanTypeExc == Type)
 				localScan[i] = x;
 			x = op(x, data[i]);
 			if(MgpuScanTypeInc == Type)
@@ -111,7 +111,7 @@ MGPU_LAUNCH_BOUNDS void KernelScanParallel(DataIt data_global, int count,
 	typedef MGPU_LAUNCH_PARAMS Params;
 	const int NT = Params::NT;
 	const int VT = Params::VT;
-	
+
 	typedef CTATileScan<NT, VT, T, Op> TileScan;
 	union Shared {
 		typename TileScan::Storage tileScanStorage;
@@ -119,9 +119,9 @@ MGPU_LAUNCH_BOUNDS void KernelScanParallel(DataIt data_global, int count,
 	__shared__ Shared shared;
 
 	int tid = threadIdx.x;
-	
+
 	// Scan from data_global into dest_global.
-	T total = TileScan::DeviceScanTile<Type>(data_global, count, tid, identity, 
+	T total = TileScan::DeviceScanTile<Type>(data_global, count, tid, identity,
 		op, identity, dest_global, shared.tileScanStorage);
 
 	if(!tid && total_global)
@@ -130,7 +130,7 @@ MGPU_LAUNCH_BOUNDS void KernelScanParallel(DataIt data_global, int count,
 
 template<typename Tuning, MgpuScanType Type, typename DataIt, typename OutputIt,
 	typename T, typename Op>
-MGPU_LAUNCH_BOUNDS void KernelScanDownsweep(DataIt data_global, int count, 
+MGPU_LAUNCH_BOUNDS void KernelScanDownsweep(DataIt data_global, int count,
 	const T* reduction_global, T identity, Op op, OutputIt dest_global) {
 
 	typedef MGPU_LAUNCH_PARAMS Params;
@@ -150,7 +150,7 @@ MGPU_LAUNCH_BOUNDS void KernelScanDownsweep(DataIt data_global, int count,
 	T start = reduction_global[block];
 
 	// Scan from data_global into dest_global.
-	TileScan::DeviceScanTile<Type>(data_global + gid, count2, tid, 
+	TileScan::DeviceScanTile<Type>(data_global + gid, count2, tid,
 		identity, op, start, dest_global + gid, tileScanStorage);
 }
 
@@ -159,9 +159,9 @@ MGPU_LAUNCH_BOUNDS void KernelScanDownsweep(DataIt data_global, int count,
 template<MgpuScanType Type, typename DataIt, typename T, typename Op,
 	typename DestIt>
 MGPU_HOST void Scan(DataIt data_global, int count, T identity, Op op,
-	T* reduce_global, T* reduce_host, DestIt dest_global, 
+	T* reduce_global, T* reduce_host, DestIt dest_global,
 	CudaContext& context) {
-		
+
 	MGPU_MEM(T) totalDevice;
 	if(reduce_host && !reduce_global) {
 		totalDevice = context.Malloc<T>(1);
@@ -220,7 +220,7 @@ template<typename InputIt, typename T>
 MGPU_HOST void ScanExc(InputIt data_global, int count, T* total,
 	CudaContext& context) {
 
-	Scan<MgpuScanTypeExc>(data_global, count, (T)0, mgpu::plus<T>(), (T*)0, 
+	Scan<MgpuScanTypeExc>(data_global, count, (T)0, mgpu::plus<T>(), (T*)0,
 		total, data_global,context);
 }
 

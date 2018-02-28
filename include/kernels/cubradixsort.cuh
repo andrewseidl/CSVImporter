@@ -36,7 +36,7 @@ bool CubRadixSort(Key* keys_global, Key* keys2_global, Value* values_global,
 
 	MGPU_MEM(byte) tempDevice = context.Malloc<byte>(tempBytes);
 
-	cub::DeviceRadixSort::SortPairs(tempDevice->get(), tempBytes, keys, values, 
+	cub::DeviceRadixSort::SortPairs(tempDevice->get(), tempBytes, keys, values,
 		count, beginBit, endBit, context.Stream());
 	MGPU_SYNC_CHECK("cub::DeviceRadixSort::SortPairs");
 

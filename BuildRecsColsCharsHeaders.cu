@@ -92,7 +92,7 @@ __global__ void BuildRecsColsCharsHeaders(uint8_t *  d_Buffer, uint32_t *  d_Rec
 		//bytestodo = overbytes;
 		lastword = true;
 	}
-	// loop through the 4 (or fewer) bytes and output 
+	// loop through the 4 (or fewer) bytes and output
 	for (int i = 0; i < 4; i++)
 	{
 		charval = 0;
@@ -208,7 +208,7 @@ __global__ void BuildRecordHeaders(uint8_t *  d_Buffer, uint32_t *  d_RecordHead
 	{
 		lastword = true;
 	}
-	// loop through the 4 (or fewer) bytes and output 
+	// loop through the 4 (or fewer) bytes and output
 	for (int i = 0; i < 4; i++)
 	{
 		recval = 0;

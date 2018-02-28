@@ -1,6 +1,6 @@
 /******************************************************************************
  * Copyright (c) 2013, NVIDIA CORPORATION.  All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -11,10 +11,10 @@
  *     * Neither the name of the NVIDIA CORPORATION nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED. IN NO EVENT SHALL NVIDIA CORPORATION BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -45,10 +45,10 @@ namespace mgpu {
 // Loads data from global memory and performs a sorted search. Leaves the
 // indices in shared memory.
 
-template<int NT, int VT, MgpuBounds Bounds, bool IndexA, bool MatchA, 
+template<int NT, int VT, MgpuBounds Bounds, bool IndexA, bool MatchA,
 	bool IndexB, bool MatchB, typename InputIt1, typename InputIt2, typename T,
 	typename Comp>
-MGPU_DEVICE int2 DeviceLoadSortedSearch(int4 range, InputIt1 a_global, 
+MGPU_DEVICE int2 DeviceLoadSortedSearch(int4 range, InputIt1 a_global,
 	int aCount, InputIt2 b_global, int bCount, int tid, int block,
 	T* keys_shared, int* indices_shared, Comp comp) {
 
@@ -77,7 +77,7 @@ MGPU_DEVICE int2 DeviceLoadSortedSearch(int4 range, InputIt1 a_global,
 	int bEnd = bStart + bCount2 + rightB;
 
 	// Cooperatively load all the data including halos.
-	DeviceLoad2ToShared<NT, VT, VT + 1>(a_global + a0 - leftA, aEnd, 
+	DeviceLoad2ToShared<NT, VT, VT + 1>(a_global + a0 - leftA, aEnd,
 		b_global + b0 - leftB, bEnd - aEnd, tid, keys_shared);
 
 	// Run the serial searches and compact the indices into shared memory.
@@ -109,11 +109,11 @@ MGPU_DEVICE int2 DeviceLoadSortedSearch(int4 range, InputIt1 a_global,
 // the element in B. This element will immediately precede the returned index.
 
 template<typename Tuning, MgpuBounds Bounds, bool IndexA, bool MatchA,
-	bool IndexB, bool MatchB, typename InputIt1, typename InputIt2, 
+	bool IndexB, bool MatchB, typename InputIt1, typename InputIt2,
 	typename OutputIt1, typename OutputIt2, typename Comp>
 MGPU_LAUNCH_BOUNDS void KernelSortedSearch(InputIt1 a_global, int aCount,
-	InputIt2 b_global, int bCount, const int* mp_global, 
-	OutputIt1 aIndices_global, OutputIt2 bIndices_global, int* aMatchCount, 
+	InputIt2 b_global, int bCount, const int* mp_global,
+	OutputIt1 aIndices_global, OutputIt2 bIndices_global, int* aMatchCount,
 	int* bMatchCount, Comp comp) {
 
 	typedef typename std::iterator_traits<InputIt1>::value_type T;
@@ -134,7 +134,7 @@ MGPU_LAUNCH_BOUNDS void KernelSortedSearch(InputIt1 a_global, int aCount,
 	int block = blockIdx.x;
 	int4 range = ComputeMergeRange(aCount, bCount, block, 0, NV, mp_global);
 
-	int2 matchCount = DeviceLoadSortedSearch<NT, VT, Bounds, IndexA, MatchA, 
+	int2 matchCount = DeviceLoadSortedSearch<NT, VT, Bounds, IndexA, MatchA,
 		IndexB, MatchB>(range, a_global, aCount, b_global, bCount, tid, block,
 		shared.keys, shared.indices, comp);
 	aCount = range.y - range.x;
@@ -142,14 +142,14 @@ MGPU_LAUNCH_BOUNDS void KernelSortedSearch(InputIt1 a_global, int aCount,
 
 	// Store A indices to global memory.
 	if(IndexA || MatchA)
-		DeviceMemToMemLoop<NT>(aCount, shared.indices, tid, 
+		DeviceMemToMemLoop<NT>(aCount, shared.indices, tid,
 			aIndices_global + range.x);
-	
+
 	// Store B match flags to global memory.
 	if(IndexB || MatchB)
-		DeviceMemToMemLoop<NT>(bCount, shared.indices + aCount, tid, 
+		DeviceMemToMemLoop<NT>(bCount, shared.indices + aCount, tid,
 			bIndices_global + range.z);
-			
+
 	// Set the atomic counters for A matches and B matches.
 	if((MatchA || MatchB) && (aMatchCount || bMatchCount)) {
 		int x = bfi(matchCount.y, matchCount.x, 16, 16);
@@ -163,13 +163,13 @@ MGPU_LAUNCH_BOUNDS void KernelSortedSearch(InputIt1 a_global, int aCount,
 // SortedSearch
 
 template<MgpuBounds Bounds, MgpuSearchType TypeA, MgpuSearchType TypeB,
-	typename InputIt1, typename InputIt2, typename OutputIt1, 
+	typename InputIt1, typename InputIt2, typename OutputIt1,
 	typename OutputIt2, typename Comp>
 MGPU_HOST void SortedSearch(InputIt1 a_global, int aCount, InputIt2 b_global,
 	int bCount, OutputIt1 aIndices_global, OutputIt2 bIndices_global,
 	Comp comp, CudaContext& context, int* aMatchCount, int* bMatchCount) {
 
-	const bool IndexA = MgpuSearchTypeIndex == TypeA || 
+	const bool IndexA = MgpuSearchTypeIndex == TypeA ||
 		MgpuSearchTypeIndexMatch == TypeA;
 	const bool MatchA = MgpuSearchTypeMatch == TypeA ||
 		MgpuSearchTypeIndexMatch == TypeA;
@@ -205,22 +205,22 @@ MGPU_HOST void SortedSearch(InputIt1 a_global, int aCount, InputIt2 b_global,
 
 	// Launch the kernel.
 	KernelSortedSearch<Tuning, Bounds, IndexA, MatchA, IndexB, MatchB>
-		<<<numBlocks, launch.x, 0, context.Stream()>>>(a_global, aCount, 
+		<<<numBlocks, launch.x, 0, context.Stream()>>>(a_global, aCount,
 		b_global, bCount, partitionsDevice->get(), aIndices_global,
 		bIndices_global, aMatchDevice, bMatchDevice, comp);
 	MGPU_SYNC_CHECK("KernelSortedSearch");
-	
+
 	// Copy counters back to host memory.
 	if((MatchA && aMatchCount) || (MatchB && bMatchCount)) {
 		int2 host;
-		cudaMemcpy(&host, counters->get(), sizeof(int2), 
+		cudaMemcpy(&host, counters->get(), sizeof(int2),
 			cudaMemcpyDeviceToHost);
 		if(aMatchCount) *aMatchCount = host.x;
 		if(bMatchCount) *bMatchCount = host.y;
 	}
 }
 template<MgpuBounds Bounds, MgpuSearchType TypeA, MgpuSearchType TypeB,
-	typename InputIt1, typename InputIt2, typename OutputIt1, 
+	typename InputIt1, typename InputIt2, typename OutputIt1,
 	typename OutputIt2>
 MGPU_HOST void SortedSearch(InputIt1 a_global, int aCount, InputIt2 b_global,
 	int bCount, OutputIt1 aIndices_global, OutputIt2 bIndices_global,
@@ -262,7 +262,7 @@ struct SortedEqualityOp {
 	}
 };
 
-template<typename Tuning, typename InputIt1, typename InputIt2, 
+template<typename Tuning, typename InputIt1, typename InputIt2,
 	typename InputIt3, typename OutputIt, typename Comp, typename Op>
 MGPU_LAUNCH_BOUNDS void KernelSortedEqualityCount(InputIt1 a_global, int aCount,
 	InputIt2 b_global, int bCount, const int* mp_global, InputIt3 lb_global,
@@ -279,14 +279,14 @@ MGPU_LAUNCH_BOUNDS void KernelSortedEqualityCount(InputIt1 a_global, int aCount,
 		int indices[NV];
 	};
 	__shared__ Shared shared;
-	
+
 	int tid = threadIdx.x;
 	int block = blockIdx.x;
 	int4 range = ComputeMergeRange(aCount, bCount, block, 0, NV, mp_global);
 
 	// Compute the upper bound.
 	int2 matchCount = DeviceLoadSortedSearch<NT, VT, MgpuBoundsUpper, true,
-		false, false, false>(range, a_global, aCount, b_global, bCount, tid, 
+		false, false, false>(range, a_global, aCount, b_global, bCount, tid,
 		block, shared.keys, shared.indices, comp);
 	int aCount2 = range.y - range.x;
 
@@ -309,7 +309,7 @@ MGPU_LAUNCH_BOUNDS void KernelSortedEqualityCount(InputIt1 a_global, int aCount,
 template<typename InputIt1, typename InputIt2, typename InputIt3,
 	typename OutputIt, typename Comp, typename Op>
 MGPU_HOST void SortedEqualityCount(InputIt1 a_global, int aCount,
-	InputIt2 b_global, int bCount, InputIt3 lb_global, OutputIt counts_global, 
+	InputIt2 b_global, int bCount, InputIt3 lb_global, OutputIt counts_global,
 	Comp comp, Op op, CudaContext& context) {
 
 	const int NT = 128;
@@ -323,7 +323,7 @@ MGPU_HOST void SortedEqualityCount(InputIt1 a_global, int aCount,
 
 	int numBlocks = MGPU_DIV_UP(aCount + bCount, NV);
 	KernelSortedEqualityCount<Tuning>
-		<<<numBlocks, launch.x, 0, context.Stream()>>>(a_global, aCount, 
+		<<<numBlocks, launch.x, 0, context.Stream()>>>(a_global, aCount,
 		b_global, bCount, partitionsDevice->get(), lb_global, counts_global,
 		comp, op);
 	MGPU_SYNC_CHECK("KernelSortedEqualityCount");
@@ -331,11 +331,11 @@ MGPU_HOST void SortedEqualityCount(InputIt1 a_global, int aCount,
 template<typename InputIt1, typename InputIt2, typename InputIt3,
 	typename OutputIt, typename Op>
 MGPU_HOST void SortedEqualityCount(InputIt1 a_global, int aCount,
-	InputIt2 b_global, int bCount, InputIt3 lb_global, OutputIt counts_global, 
+	InputIt2 b_global, int bCount, InputIt3 lb_global, OutputIt counts_global,
 	Op op, CudaContext& context) {
 
 	typedef mgpu::less<typename std::iterator_traits<InputIt1>::value_type> C;
-	SortedEqualicyCount(a_global, aCount, b_global, bCount, lb_global, 
+	SortedEqualicyCount(a_global, aCount, b_global, bCount, lb_global,
 		counts_global, C(), op, context);
 }
 

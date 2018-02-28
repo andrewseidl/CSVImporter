@@ -786,7 +786,7 @@ extern "C" uint64_t CSVImporterMain(char * filename, char delimiter, uint16_t nu
 
 	uint64_t vcret; // return val for varcols calls.
 	vcret = importer_varcols(*context, filename, ColumnCharWidths, numDefinedColumns, numTotalColumns, delimiter, GPUResidentFlag, dataColumnPtrs, dataColumnOffsets, seekafterhdr, charmultiplier);
-	
+
 	return vcret;
 }
 

@@ -1,6 +1,6 @@
 /******************************************************************************
  * Copyright (c) 2013, NVIDIA CORPORATION.  All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -11,10 +11,10 @@
  *     * Neither the name of the NVIDIA CORPORATION nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED. IN NO EVENT SHALL NVIDIA CORPORATION BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -84,7 +84,7 @@ template<int X> struct sIsPow2 {
 };
 
 // Finds the base-2 logarithm of X. value is -1 if X is not a power of 2.
-template<int X, bool roundUp = true> struct sLogPow2 { 
+template<int X, bool roundUp = true> struct sLogPow2 {
 	enum { extra = sIsPow2<X>::value ? 0 : (roundUp ? 1 : 0) };
 	enum { inner = sLogPow2<X / 2>::inner + 1 };
 	enum { value = inner + extra };
@@ -93,7 +93,7 @@ template<bool roundUp> struct sLogPow2<0, roundUp> {
 	enum { inner = 0 };
 	enum { value = 0 };
 };
-template<bool roundUp> struct sLogPow2<1, roundUp> { 
+template<bool roundUp> struct sLogPow2<1, roundUp> {
 	enum { inner = 0 };
 	enum { value = 0 };
 };
@@ -131,7 +131,7 @@ struct sRoundDown {
 	enum { value = X - rem };
 };
 
-// IntegerDiv is a template for avoiding divisions by zero in template 
+// IntegerDiv is a template for avoiding divisions by zero in template
 // evaluation. Templates always evaluate both b and c in an expression like
 // a ? b : c, and will error if either rhs contains an illegal expression,
 // even if the ternary is explictly designed to guard against that.
@@ -166,10 +166,10 @@ template<int X> struct sNumFactorsOf2<X, 1> {
 
 // Returns the divisor for a conflict-free transpose.
 template<int X, int NumBanks = 32> struct sBankConflictDivisor {
-	enum { value = 
-		(1 & X) ? 0 : 
+	enum { value =
+		(1 & X) ? 0 :
 		(sIsPow2<X>::value ? NumBanks :
-		(1<< sNumFactorsOf2<X>::value)) }; 
+		(1<< sNumFactorsOf2<X>::value)) };
 	enum { log_value = sLogPow2<value>::value };
 };
 
