@@ -45,7 +45,6 @@
 #ifndef WIN32
 #include <sys/mman.h> // for mmap() / munmap()
 #endif
-using namespace std;
 
 // CUDA runtime
 #include "cuda.h"

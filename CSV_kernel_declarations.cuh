@@ -20,7 +20,6 @@
 * See https://github.com/Simantex/CSVImporter for repository and documentation.
 *
 ******************************************************************************/
-using namespace std;
 #include <stdint.h>
 
 #include <stdio.h>

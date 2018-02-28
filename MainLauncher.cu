@@ -31,8 +31,6 @@
 #include <stdint.h>
 #include <time.h>
 
-using namespace std;
-
 // CUDA runtime
 #include "cuda.h"
 #include "cuda_runtime.h"
@@ -52,7 +50,6 @@ using namespace std;
 #include "csvImporter.h"
 #include "CSV_kernel_declarations.cuh"
 
-using namespace mgpu;
 
 // function copies only col names on non-omitted columns.
 extern "C" bool CopyOnlyUsedColNames(char * columnnames[], bool skucolflagsin[], uint16_t totalcolcount, uint16_t definedcolcount, int16_t * arrayUTF8charwidths, char ** usedcolumnnames[], bool * skucolflagsout[], uint16_t * usedcolcount)
@@ -270,7 +267,7 @@ extern "C" bool SkipFileHeaderRecord(char * filepath, int64_t * seekafterheader)
 // We also pass in the SKU and DIV col #s (defaults 0 and 1) in the INPUT file.
 // The middleware outputs from this function will always put SKU in col 0 and DIV in col 1.
 //
-uint64_t importer_varcols(CudaContext& context, char * filepath,
+uint64_t importer_varcols(mgpu::CudaContext& context, char * filepath,
 	int16_t * arrayUTF8charwidths, uint16_t numdefinedcolumns, uint16_t numtotalcolumns,
 	char delimiter, bool GPUResidentFlag, unsigned char ** dataColumnPtrs, unsigned int * dataColumnOffsets, int64_t initialseek = 0, uint8_t charmultiplier = 1, uint8_t bytesalignment = 8)
 {
@@ -440,7 +437,7 @@ uint64_t importer_varcols(CudaContext& context, char * filepath,
 		launch_Merge2ndQuotesAndNonprinting(d_printingchars_flags, d_secondquotes, chunkbytes);
 
 		printf("Starting Scan Record Headers (Commas).\n");
-		Scan<MgpuScanTypeExc>(d_RecordHeaders, chunkbytesplus1,
+		mgpu::Scan<mgpu::MgpuScanTypeExc>(d_RecordHeaders, chunkbytesplus1,
 			(uint32_t)0, mgpu::plus<uint32_t>(), (uint32_t *)0, (uint32_t*)0, d_RecordHeadersSCAN, context);
 
 		// get records count.
@@ -448,7 +445,7 @@ uint64_t importer_varcols(CudaContext& context, char * filepath,
 		checkCudaErrors(cudaMemcpy(&recordstablecount_commas, d_RecordHeadersSCAN + chunkbytes, sizeof(uint32_t), cudaMemcpyDeviceToHost));
 
 		printf("Starting Scan Quote Boundaries (Commas).\n");
-		Scan<MgpuScanTypeExc>(d_QuoteBoundaryHeaders, chunkbytesplus1,
+		mgpu::Scan<mgpu::MgpuScanTypeExc>(d_QuoteBoundaryHeaders, chunkbytesplus1,
 			(uint32_t)0, mgpu::plus<uint32_t>(), (uint32_t *)0, (uint32_t*)0, d_QuoteBoundaryHeaders_SCAN, context);
 
 		// get quote boundaries count.
@@ -468,7 +465,7 @@ uint64_t importer_varcols(CudaContext& context, char * filepath,
 
 		// now we need to stream compact buffer, rec headers, and col headers for use later.
 		printf("Starting Scan Printing Chars (Commas).\n");
-		Scan<MgpuScanTypeExc>(d_printingchars_flags, chunkbytesplus1,
+		mgpu::Scan<mgpu::MgpuScanTypeExc>(d_printingchars_flags, chunkbytesplus1,
 			(uint32_t)0, mgpu::plus<uint32_t>(), (uint32_t *)0, (uint32_t*)0, d_printingchars_SCAN, context);
 
 		// get the final count of printing chars.
@@ -503,7 +500,7 @@ uint64_t importer_varcols(CudaContext& context, char * filepath,
 		printf("Starting Scan UTF8 Headers.\n");
 
 		// exclusive scan the ends headers so all positions for each zip will have same scan value.
-		Scan<MgpuScanTypeExc>(d_UTF8Headers, chunkbytesplus1,
+		mgpu::Scan<mgpu::MgpuScanTypeExc>(d_UTF8Headers, chunkbytesplus1,
 			(uint32_t)0, mgpu::plus<uint32_t>(), (uint32_t *)0, (uint32_t*)0, d_UTF8HeadersSCAN, context);
 
 
@@ -520,7 +517,7 @@ uint64_t importer_varcols(CudaContext& context, char * filepath,
 		free(h_charstablecount);
 
 		printf("Starting Scan Record Headers.\n");
-		Scan<MgpuScanTypeExc>(d_RecordHeaders_printing, chunkbytesplus1,
+		mgpu::Scan<mgpu::MgpuScanTypeExc>(d_RecordHeaders_printing, chunkbytesplus1,
 			(uint32_t)0, mgpu::plus<uint32_t>(), (uint32_t *)0, (uint32_t*)0, d_RecordHeadersSCAN, context);
 
 		// retrieve last value, the one past the end of the actual values.
@@ -549,7 +546,7 @@ uint64_t importer_varcols(CudaContext& context, char * filepath,
 		bool cpy = FixDestFields((const void*)h_fieldUTF8charsizes, (const void*)G_h_fieldbytewidths, (size_t)(numtotalcolumns * sizeof(uint16_t)), (const void*)h_d_fieldptrs, (size_t)(numtotalcolumns * sizeof(unsigned char *)));
 
 		printf("Starting Scan Column Headers.\n");
-		Scan<MgpuScanTypeExc>(d_ColumnHeaders_printing, chunkbytesplus1,
+		mgpu::Scan<mgpu::MgpuScanTypeExc>(d_ColumnHeaders_printing, chunkbytesplus1,
 			(uint32_t)0, mgpu::plus<uint32_t>(), (uint32_t *)0, (uint32_t*)0, d_ColumnHeadersSCAN, context);
 
 		// retrieve last value, the one past the end of the actual values.
@@ -572,7 +569,7 @@ uint64_t importer_varcols(CudaContext& context, char * filepath,
 
 		printf("Starting Scan Errors Headers.\n");
 
-		Scan<MgpuScanTypeExc>(d_ColumnCountErrors, recordstablecount + 1,
+		mgpu::Scan<mgpu::MgpuScanTypeExc>(d_ColumnCountErrors, recordstablecount + 1,
 			(uint32_t)0, mgpu::plus<uint32_t>(), (uint32_t *)0, (uint32_t*)0, d_ColumnCountErrorsSCAN, context);
 
 		// retrieve last value, the one past the end of the actual values.
@@ -783,7 +780,7 @@ uint64_t importer_varcols(CudaContext& context, char * filepath,
 extern "C" uint64_t CSVImporterMain(char * filename, char delimiter, uint16_t numTotalColumns, uint16_t numDefinedColumns, int16_t * ColumnCharWidths, unsigned char ** dataColumnPtrs, unsigned int * dataColumnOffsets, int64_t seekafterhdr, uint8_t charmultiplier, bool GPUResidentFlag)
 {
 	// Get the Cuda device with the most GFLOPS for this operation
-	ContextPtr context = CreateCudaDevice(gpuGetMaxGflopsDeviceId());
+	mgpu::ContextPtr context = mgpu::CreateCudaDevice(gpuGetMaxGflopsDeviceId());
 
 	checkCudaErrors(cudaDeviceSetCacheConfig(cudaFuncCachePreferL1));
 
