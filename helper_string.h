@@ -55,7 +55,7 @@
 #define STRNCASECMP strncasecmp
 #endif
 #ifndef STRCPY
-#define STRCPY(sFilePath, nLength, sPath) strcpy(sFilePath, sPath)
+#define STRCPY(sFilePath, nLength, sPath) strncpy(sFilePath, sPath, nLength-1)
 #endif
 
 #ifndef FOPEN

@@ -47,7 +47,7 @@ int main(int argc, char** argv)
 	getcwd(buffer, 256);
 
 	// Add trailing backslash and test filename
-	strcat(buffer, "/testfile.csv");
+	strncat(buffer, "/testfile.csv", 255);
 
 	int16_t SampleColumnCharWidths[64];  // define char widths.
 										 // preliminary columns
