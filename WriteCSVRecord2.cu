@@ -321,7 +321,7 @@ __global__ void WriteCSVRecord2(uint8_t *  d_Buffer, uint32_t *  d_RecsTabl, uin
 
 		// do the shuffles here because shouldn't do inside conditional.
 		// will manipulate below using these.
-		uint32_t shuffledown = __shfl_down(inval.inputuint, 1);
+		uint32_t shuffledown = __shfl_down_sync(0xFFFFFFFF, inval.inputuint, 1);
 		// can't shuffle into lane 31. so get from shared or set to 0.
 		if (laneid == 31)
 		{

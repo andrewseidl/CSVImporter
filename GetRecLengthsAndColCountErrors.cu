@@ -82,8 +82,8 @@ __global__ void GetRecLengthsAndColCountErrorsSMEM2(uint32_t *  d_RecsTabl, uint
 	__syncthreads();
 
 	// try to load prev based on warp shuffles
-	uint32_t prevrecs = __shfl_up(myrecs, 1);
-	uint32_t prevrecstocols = __shfl_up(myrecstocols, 1);
+	uint32_t prevrecs = __shfl_up_sync(0xFFFFFFFF, myrecs, 1);
+	uint32_t prevrecstocols = __shfl_up_sync(0xFFFFFFFF, myrecstocols, 1);
 
 	// now mod based on thread and lane
 	// set to 0 for very first thread (0) since nothing to look up
