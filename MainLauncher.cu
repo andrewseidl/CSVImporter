@@ -425,7 +425,6 @@ uint64_t importer_varcols(CudaContext& context, char * filepath,
 
 		// START PROCESSING OF CHUNK.
 		uint32_t chunkbytesplus1 = chunkbytes + 1;
-		uint32_t chunkbytesplus1uint32 = (chunkbytes + 1) * sizeof(uint32_t);
 
 		checkCudaErrors(cudaMemcpy((void*)d_CsvBuffer, (void*)h_CsvBuffer_a, (size_t)chunkbytesplus1, cudaMemcpyHostToDevice));
 
@@ -498,7 +497,6 @@ uint64_t importer_varcols(CudaContext& context, char * filepath,
 		// shorten chunkbytes as needed.
 		chunkbytes = printingcharscount;
 		chunkbytesplus1 = chunkbytes + 1;
-		chunkbytesplus1uint32 = chunkbytesplus1 * sizeof(uint32_t);
 
 		launch_BuildCharsHeadersOnly(d_CsvBuffer_printing, d_RecordHeaders_printing, d_ColumnHeaders_printing, d_UTF8Headers, chunkbytesplus1);
 
@@ -518,7 +516,6 @@ uint64_t importer_varcols(CudaContext& context, char * filepath,
 			fprintf(stderr, "cudaMemcpy failed (utf8 chars scan last)! %s", cudaGetErrorString(cudaStatus));
 			return 0;
 		}
-		uint32_t charstablecount = *h_charstablecount;
 
 		free(h_charstablecount);
 

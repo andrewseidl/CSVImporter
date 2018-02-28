@@ -130,7 +130,7 @@ cudaError_t cudaStatus;
 int inumchunks = 1;
 uint64_t apprx_chunklen = 0;
 
-extern FILE * pCsvFileIn = NULL;
+FILE * pCsvFileIn = nullptr;
 int64_t startseek = (int64_t)0;  // place to start in file to read a chunk
 
 uint32_t chunkrecidxstarts[MAXCHUNKS + 1];

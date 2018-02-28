@@ -90,7 +90,7 @@ int main(int argc, char** argv)
 				// print the columns to the screen
 				char * col = (char *)dataColumnPtrs[iLCV];
 				col = (char *)&(col[recNo * dataColumnOffsets[iLCV]]);
-				printf(col);
+				printf("%s", col);
 				printf("\t");
 			}
 			printf("\n");
